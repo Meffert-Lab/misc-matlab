@@ -9,17 +9,22 @@ if not(endsWith(inputFile, '.csv'))
     return;
 end
 
+%-- CHANGE THESE PARAMS --%
+dayString = 'D7';
+stainString = 'MAP2';
+%--                     --%
+
 DataArray = readcell(sprintf('%s%s', pathToFile, inputFile));
 ColumnNames = DataArray(1,:);
 if contains(string(ColumnNames), "FILENAME") == zeros(size(ColumnNames))
     return;
 end
-if contains(string(ColumnNames), "VOL MAP2") == zeros(size(ColumnNames))
+if contains(string(ColumnNames), sprintf("%s %s", 'VOL', stainString)) == zeros(size(ColumnNames))
     return;
 end
 
 FilenameCol = find(contains(ColumnNames, "FILENAME"), 1);
-VolumeCol = find(contains(ColumnNames, "VOL MAP2"), 1);
+VolumeCol = find(contains(ColumnNames, sprintf("%s %s", 'VOL', stainString)), 1);
 
 FilenameData = DataArray(:, FilenameCol);
 FilenameData = FilenameData(2:end, :);
@@ -30,10 +35,12 @@ DataToSort = [FilenameData, VolumeData];
 
 ContraData = DataToSort(contains(FilenameData, "CONTRA", 'IgnoreCase',true), :);
 
-SNIContraData = ContraData(startsWith(string(ContraData(:, 1)), "D", 'IgnoreCase',true), :);
+SNIContraData = ContraData(startsWith(string(ContraData(:, 1)), dayString, 'IgnoreCase',true), :);
 NaiveContraData = ContraData(startsWith(string(ContraData(:, 1)), "Naive", 'IgnoreCase',true), :);
 
 IpsiData = DataToSort(contains(FilenameData, "IPSI",'IgnoreCase',true ), :);
+IpsiData = IpsiData(startsWith(string(IpsiData(:, 1)), dayString, 'IgnoreCase',true), :);
+
 IpsiMiddleData = IpsiData(contains(IpsiData(:, 1), "MIDDLE", 'IgnoreCase',true), :);
 IpsiStumpData = IpsiData(contains(IpsiData(:, 1), "STUMP", 'IgnoreCase',true), :);
 IpsiProximalData = IpsiData(contains(IpsiData(:, 1), "PROXIMAL", 'IgnoreCase',true), :);
@@ -78,8 +85,8 @@ end
 OutputData = horzcat(NaiveContraData(:), NaiveIpsiData(:), SNIContraData(:), IpsiMiddleData(:), IpsiStumpData(:), IpsiProximalData(:), IpsiSuralData(:));
 header = ["NAIVE CONTRA", "NAIVE IPSI", "SNI CONTRA", "SNI IPSI MIDDLE", "SNI IPSI STUMP", "SNI IPSI PROXIMAL", "SNI IPSI SURAL"];
 
-pathToWrite = pathToFile + "/" + extractBetween(inputFile, 1, max(strfind(inputFile, "."))) + "_sorted.csv";
+pathToWrite = pathToFile + "/" + extractBetween(inputFile, 1, max(strfind(inputFile, ".")) - 1) + "_sorted_" + dayString + stainString + ".csv";
 
 writematrix(header, pathToWrite, 'WriteMode','overwrite');
 writematrix(OutputData, pathToWrite, 'WriteMode','append');
-
+return;
