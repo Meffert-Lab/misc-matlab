@@ -10,7 +10,7 @@ if not(endsWith(inputFile, '.csv'))
 end
 
 %-- CHANGE THESE PARAMS --%
-dayString = 'D7';
+dayString = 'D3';
 stainString = 'MAP2';
 %--                     --%
 
@@ -39,6 +39,8 @@ SNIContraData = ContraData(startsWith(string(ContraData(:, 1)), dayString, 'Igno
 NaiveContraData = ContraData(startsWith(string(ContraData(:, 1)), "Naive", 'IgnoreCase',true), :);
 
 IpsiData = DataToSort(contains(FilenameData, "IPSI",'IgnoreCase',true ), :);
+NaiveIpsiData = IpsiData(startsWith(string(IpsiData(:, 1)), "Naive", 'IgnoreCase',true), :);
+
 IpsiData = IpsiData(startsWith(string(IpsiData(:, 1)), dayString, 'IgnoreCase',true), :);
 
 IpsiMiddleData = IpsiData(contains(IpsiData(:, 1), "MIDDLE", 'IgnoreCase',true), :);
@@ -47,7 +49,7 @@ IpsiProximalData = IpsiData(contains(IpsiData(:, 1), "PROXIMAL", 'IgnoreCase',tr
 IpsiDistalData = IpsiData(contains(IpsiData(:, 1), "DISTAL", 'IgnoreCase',true), :);
 IpsiProximalData = [IpsiProximalData; IpsiDistalData];
 IpsiSuralData = IpsiData(contains(IpsiData(:, 1), "SURAL", 'IgnoreCase',true), :);
-NaiveIpsiData = IpsiData(startsWith(string(IpsiData(:, 1)), "Naive", 'IgnoreCase',true), :);
+
 
 SNIContraData = cell2mat(SNIContraData(:, 2));
 NaiveContraData = cell2mat(NaiveContraData(:, 2));
