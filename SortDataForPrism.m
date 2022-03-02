@@ -1,37 +1,91 @@
 function SortDataForPrism
 
-[inputFile, pathToFile] = uigetfile('*.csv');
-
-if inputFile == 0
-    return;
-end
-if not(endsWith(inputFile, '.csv'))
-    return;
-end
-
 %-- CHANGE THESE PARAMS --%
+%dayString = 'D3';
 dayString = 'D7';
-stainString = 'S100';
+%dayString = 'D28';
+
+%Select one combination of stainString and DataColumnName
+stainString = 'MAP2';
+%DataColumnName = sprintf("%s %s", 'VOL', stainString);
+DataColumnName = sprintf("%s %s %s", 'VOL', 'IN', stainString);
+%DataColumnName = sprintf("%s %s %s %s", 'VOL', 'IN', stainString, 'NORM');
+%stainString = 'S100';
+%DataColumnName = sprintf("%s %s", 'VOL', stainString);
+%DataColumnName = sprintf("%s %s %s%s", 'VOL', 'IN', stainString, '-COLOC');
+%DataColumnName = sprintf("%s %s %s%s %s", 'VOL', 'IN', stainString, '-COLOC', 'NORM');
+
 FilenameCol = 'FILENAME';
+
+%FileType = '.csv';
+%FileType = '.xls';
+FileType = '.xlsx';
 %--                     --%
 
-DataArray = readcell(sprintf('%s%s', pathToFile, inputFile));
-ColumnNames = DataArray(1,:);
-if contains(string(ColumnNames), FilenameCol) == zeros(size(ColumnNames))
+[inputFile, pathToFile] = uigetfile(sprintf('%s%s', '*', FileType));
+
+if inputFile == 0
+    msgbox('NO INPUT FILE');
     return;
 end
-if contains(string(ColumnNames), sprintf("%s %s", 'VOL', stainString)) == zeros(size(ColumnNames))
+if not(endsWith(inputFile, FileType))
+    msgbox('WRONG FILE TYPE');
+    return;
+end
+
+DataArray = readcell(sprintf('%s%s', pathToFile, inputFile));
+
+intermediate = cellfun(@ismissing, DataArray, 'UniformOutput',false);
+for a = 1:numel(intermediate)
+    if length(cell2mat(intermediate(a))) > 1
+        intermediate(a) = {false};
+    end
+end
+
+for a = 1:numel(intermediate)
+    if cell2mat(intermediate(a))
+        DataArray(a) = {''};
+    end
+end
+
+ColumnNames = DataArray(1,:);
+ColumnNames(isempty(ColumnNames)) = '';
+if contains(string(ColumnNames), FilenameCol) == zeros(size(ColumnNames))
+    msgbox('FILENAME COL DOES NOT MATCH');
+    return;
+end
+if contains(string(ColumnNames), DataColumnName) == zeros(size(ColumnNames))
+    msgbox('DATA COL DOES NOT MATCH');
     return;
 end
 
 FilenameCol = find(contains(ColumnNames, FilenameCol), 1);
-VolumeCol = find(contains(ColumnNames, sprintf("%s %s", 'VOL', stainString)), 1);
+VolumeCol = find(contains(ColumnNames, DataColumnName), 1);
 
 FilenameData = DataArray(:, FilenameCol);
 FilenameData = FilenameData(2:end, :);
 VolumeData = DataArray(:, VolumeCol);
 VolumeData = VolumeData(2:end, :);
 
+tempFilenameData = FilenameData;
+tempVolumeData = VolumeData;
+index = 1;
+
+for a=1:numel(FilenameData)
+    if strcmpi(FilenameData(a), '') || strcmpi(VolumeData(a), '')
+        tempFilenameData(index:end - 1) = tempFilenameData(index+1:end);
+        tempFilenameData = tempFilenameData(1:end - 1);
+        tempVolumeData(index:end - 1) = tempVolumeData(index+1:end);
+        tempVolumeData = tempVolumeData(1:end -1);
+        index = index - 1;
+        
+    end
+    index = index + 1;
+end
+
+
+FilenameData = tempFilenameData;
+VolumeData = tempVolumeData;
 DataToSort = [FilenameData, VolumeData];
 
 ConditionType = extractBetween(FilenameData, 1, 4);
@@ -140,4 +194,5 @@ pathToWrite = pathToFile + "/" + extractBetween(inputFile, 1, max(strfind(inputF
 
 writematrix(header, pathToWrite, 'WriteMode','overwrite');
 writematrix(OutputData, pathToWrite, 'WriteMode','append');
+msgbox('DONE');
 return;
