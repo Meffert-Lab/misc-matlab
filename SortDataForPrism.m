@@ -1,19 +1,32 @@
 function SortDataForPrism
 
 %-- CHANGE THESE PARAMS --%
+
+%DataType = 'N';
+DataType = 'VOL';
+
 %dayString = 'D3';
 dayString = 'D7';
 %dayString = 'D28';
 
+%norm = false;
+norm = true;
+if norm
+    NormColString = sprintf(' %s', 'NORM');
+    NormFileString = 'NORM';
+else
+    NormColString = '';
+    NormFileString = '';
+end
 %Select one combination of stainString and DataColumnName
 stainString = 'MAP2';
-%DataColumnName = sprintf("%s %s", 'VOL', stainString);
-DataColumnName = sprintf("%s %s %s", 'VOL', 'IN', stainString);
-%DataColumnName = sprintf("%s %s %s %s", 'VOL', 'IN', stainString, 'NORM');
+%DataColumnName = sprintf("%s %s", DataType, stainString);
+DataColumnName = sprintf("%s %s%s", DataType, stainString, NormColString);
 %stainString = 'S100';
-%DataColumnName = sprintf("%s %s", 'VOL', stainString);
-%DataColumnName = sprintf("%s %s %s%s", 'VOL', 'IN', stainString, '-COLOC');
-%DataColumnName = sprintf("%s %s %s%s %s", 'VOL', 'IN', stainString, '-COLOC', 'NORM');
+%DataColumnName = sprintf("%s %s", DataType, stainString);
+%DataColumnName = sprintf("%s %s %s%s", DataType, 'IN', stainString, '-COLOC', NormColString);
+
+
 
 FilenameCol = 'FILENAME';
 
@@ -190,7 +203,7 @@ NaiveIpsiData = cell2mat(NaiveIpsiData(:, 2));
 OutputData = horzcat(NaiveContraData(:), NaiveIpsiData(:), SNIContraData(:), IpsiMiddleData(:), IpsiStumpData(:), IpsiProximalData(:), IpsiSuralData(:));
 header = ["NAIVE CONTRA", "NAIVE IPSI", "SNI CONTRA", "SNI IPSI MIDDLE", "SNI IPSI STUMP", "SNI IPSI PROXIMAL", "SNI IPSI SURAL"];
 
-pathToWrite = pathToFile + "/" + extractBetween(inputFile, 1, max(strfind(inputFile, ".")) - 1) + "_sorted_" + dayString + stainString + ".csv";
+pathToWrite = pathToFile + "/" + extractBetween(inputFile, 1, max(strfind(inputFile, ".")) - 1) + "_sorted_" + DataType + dayString + stainString + NormFileString + ".csv";
 
 writematrix(header, pathToWrite, 'WriteMode','overwrite');
 writematrix(OutputData, pathToWrite, 'WriteMode','append');
